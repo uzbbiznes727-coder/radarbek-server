@@ -1,37 +1,33 @@
-# RADARBEK server — Render uchun tayyor
+# RADARBEK — boshlang‘ich loyiha
 
-## 1) GitHub orqali joylash
-1. ZIP faylni telefoningizga yuklab, oching.
-2. https://github.com saytiga kiring va hisob yarating/kiring.
-3. `New repository` → nomini `radarbek-server` deb yozing → `Create repository`.
-4. `Add file` → `Upload files` orqali ZIP ichidagi FAYLLARNI (ZIPning o‘zini emas) yuklang. `render.yaml`, `server.js`, `package.json`, `index.html`, `radars.json` va `.gitignore` hammasi repo ildizida tursin.
-5. `Commit changes` ni bosing.
+## Fayllar
+- `index.html` — mobil web ilova
+- `server.js` — Node.js/Express custom API
+- `radars.json` — radarlar bazasi (hozircha bo‘sh)
 
-## 2) Render serverini yaratish
-1. https://render.com saytiga kiring va GitHub bilan ro‘yxatdan o‘ting.
-2. Dashboard → `New` → `Blueprint` (yoki repo uchun `New` → `Web Service`) ni tanlang.
-3. `radarbek-server` repozitoriyasini ulang. `render.yaml` avtomatik sozlamalarni beradi.
-4. `ADMIN_KEY` uchun kamida 32 belgili tasodifiy maxfiy kalit yarating va Render Environment bo‘limiga kiriting. Uni hech kimga yubormang va chatga yozmang.
-5. Deploy tugashini kuting. Render sizga `https://...onrender.com` manzil beradi.
-6. Tekshirish: brauzerda `https://SIZNING-MANZILINGIZ/api/health` oching. `{"ok":true,"app":"RADARBEK"}` chiqishi kerak.
-
-## 3) Muhim
-- Hozircha free Render serveri sinov uchun: 15 daqiqa so‘rov bo‘lmasa uxlaydi va fayl tizimi doimiy emas. `radars.json` ga kiritilgan o‘zgarishlar restart/deploydan keyin yo‘qolishi mumkin. Haqiqiy foydalanishdan oldin PostgreSQL bazasini ulash zarur.
-- Radar koordinatalari hozir bo‘sh. Faqat tekshirilgan va qonuniy ravishda foydalanish mumkin bo‘lgan radar ma’lumotlarini admin qo‘shishi kerak.
-- Premium to‘lovlari hali faol emas. Click/Payme merchant hisob, webhook imzo tekshiruvi va serverdagi obuna nazorati kerak. Foydalanuvchi pulini hozircha qabul qilmang.
-- GPS brauzerda odatda HTTPS talab qiladi; Render URL HTTPS bo‘ladi.
-- OSM xarita qatlamidan foydalanishda tile server siyosatiga rioya qiling.
-
-## API
-- `GET /api/health` — server holati
-- `GET /api/radars` — faol radarlar
-- `POST /api/radars` — radar qo‘shish; `x-admin-key` sarlavhasi kerak
-- `DELETE /api/radars/:id` — radar o‘chirish; `x-admin-key` kerak
-
-Radar qo‘shish namuna:
+## Ishga tushirish
+Node.js 18+ o‘rnating, loyiha papkasida:
 ```bash
-curl -X POST https://SIZNING-MANZILINGIZ/api/radars \
+npm install
+# Linux/macOS:
+ADMIN_KEY='uzun-maxfiy-kalit' npm start
+# Windows PowerShell:
+$env:ADMIN_KEY='uzun-maxfiy-kalit'; npm start
+```
+Brauzerda `http://localhost:3000` ni oching. Telefon GPS uchun HTTPS kerak (localhost istisno); internetga joylaganda HTTPS domen ishlating.
+
+## Radar qo‘shish (administrator)
+```bash
+curl -X POST http://localhost:3000/api/radars \
  -H 'Content-Type: application/json' \
- -H 'x-admin-key: ADMIN_KALIT' \
+ -H 'x-admin-key: SIZNING_MAXFIY_KALITINGIZ' \
  -d '{"name":"Tekshirilgan radar","lat":41.3111,"lng":69.2797,"speedLimit":60}'
 ```
+Yangi radarlar `verified:false` sifatida saqlanadi. Joylashuv va limitni rasmiy/ishonchli manbadan tekshirmasdan ommaga chiqarmang.
+
+## Hozirgi bosqich chegaralari
+- Radarlar bazasi bo‘sh; ilova o‘zi radarlarni avtomatik topmaydi. Admin tasdiqlangan koordinatalarni kiritishi yoki litsenziyali ma’lumot manbai ulanishi kerak.
+- Uchta bepul ogohlantirish va Premium UI hozircha interfeys ko‘rinishi. Ishonchli obuna uchun serverdagi foydalanuvchi hisobi, ma’lumotlar bazasi, Click/Payme merchant shartnomasi, payment webhook imzo tekshiruvi va Google Play Billing (APK bo‘lsa) kerak. Brauzer localStorage bilan to‘lovni himoyalab bo‘lmaydi.
+- 100 m/10 m ogohlantirishlari GPS joylashuvi va aniqligiga bog‘liq; 10 m aniqlik kafolatlanmaydi. Telefon qulflanganda fon GPS uchun keyinchalik native Android ilova/PWA imkoniyatlari kerak bo‘lishi mumkin.
+- OSM standart tile serveri sinov va kam trafik uchun; ishlab chiqarishda tile siyosatiga mos tijoriy yoki o‘z tile hostingini tanlang. Manba: https://operations.osmfoundation.org/policies/tiles/
+- Xarita Leaflet kutubxonasida qurilgan: https://leafletjs.com/examples/quick-start/
